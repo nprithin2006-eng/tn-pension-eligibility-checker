@@ -3,6 +3,7 @@ import streamlit as st
 # Rules last checked: October 2026. Always verify on official sites.
 PROPERTY_LIMIT = 100000      # pension schemes: property limit in Rs
 INCOME_LIMIT = 250000        # Magalir Urimai Thogai: family income per year in Rs
+OWN_INCOME_LIMIT = 300000    # Differently abled pension: own yearly income in Rs
 
 
 # Each function checks ONE scheme.
@@ -15,6 +16,17 @@ def check_pudhumai_penn(p):
         problems.append("Only for girls")
     if not p["govt_school"]:
         problems.append("Must have studied Classes 6-12 in a government school")
+    if not p["in_college"]:
+        problems.append("Must be studying in college (UG / Diploma / ITI / Professional)")
+    return problems
+
+
+def check_tamil_pudhalvan(p):
+    problems = []
+    if p["female"]:
+        problems.append("Only for boys")
+    if not p["govt_school"]:
+        problems.append("Must have studied Classes 6-12 in a government / govt-aided school")
     if not p["in_college"]:
         problems.append("Must be studying in college (UG / Diploma / ITI / Professional)")
     return problems
@@ -112,10 +124,38 @@ def check_ig_old_age_pension(p):
     return problems
 
 
+def check_differently_abled_pension(p):
+    problems = []
+    if p["age"] < 18:
+        problems.append("Age must be 18 or above")
+    if p["disability"] < 40:
+        problems.append("Disability must be 40% or more")
+    if p["govt_job"]:
+        problems.append("Permanent government employees are not eligible")
+    if p["own_income"] > OWN_INCOME_LIMIT:
+        problems.append("Own yearly income must not be more than Rs.3,00,000")
+    return problems
+
+
+def check_farm_labourer_pension(p):
+    problems = []
+    if p["age"] < 60:
+        problems.append("Age must be 60 or above")
+    if not p["agri_labourer"]:
+        problems.append("Must be a landless agricultural labourer")
+    if not p["destitute"]:
+        problems.append("Must be destitute")
+    if p["property"] > PROPERTY_LIMIT:
+        problems.append("Property must be within Rs.1,00,000")
+    return problems
+
+
 # (scheme name, checking function, official link)
 SCHEMES = [
     ("Pudhumai Penn (higher education support for girls)",
      check_pudhumai_penn, "https://www.tn.gov.in"),
+    ("Tamil Pudhalvan (higher education support for boys)",
+     check_tamil_pudhalvan, "https://www.tn.gov.in"),
     ("Kalaignar Magalir Urimai Thogai (monthly aid for women heads of family)",
      check_magalir_urimai, "https://kmut.tn.gov.in"),
     ("Destitute Widow Pension",
@@ -128,6 +168,10 @@ SCHEMES = [
      check_ig_widow_pension, "https://www.cra.tn.gov.in/eleg_schemes.php"),
     ("Indira Gandhi National Old Age Pension",
      check_ig_old_age_pension, "https://www.cra.tn.gov.in/eleg_schemes.php"),
+    ("Differently Abled Pension (for men and women)",
+     check_differently_abled_pension, "https://www.cra.tn.gov.in/eleg_schemes.php"),
+    ("Chief Minister's Uzhavar Padhukaapu Thittam - Old Age Pension (farm labourers)",
+     check_farm_labourer_pension, "https://www.cra.tn.gov.in/eleg_schemes.php"),
 ]
 
 # ---------------------------- Screen ----------------------------
@@ -156,8 +200,16 @@ with st.form("my_form"):
     four_wheeler = st.checkbox("Family owns car / jeep / tractor / கார், ஜீப், டிராக்டர் உள்ளது")
     gets_pension = st.checkbox("Family already gets a pension / ஏற்கனவே ஓய்வூதியம் பெறுகிறோம்")
 
-    st.subheader("3. Education / கல்வி")
-    govt_school = st.checkbox("I studied Classes 6-12 in a TN government school / அரசுப் பள்ளியில் படித்தேன்")
+    st.subheader("3. Disability and work / மாற்றுத்திறன் மற்றும் வேலை")
+    disability = st.number_input("Disability percentage (0 if none) / மாற்றுத்திறன் சதவீதம்",
+                                 min_value=0, max_value=100, value=0)
+    own_income = st.number_input("Your own income per YEAR (Rs) / உங்கள் சொந்த ஆண்டு வருமானம்",
+                                 min_value=0, value=0, step=10000)
+    govt_job = st.checkbox("I have a permanent government job / நிரந்தர அரசு வேலை உள்ளது")
+    agri_labourer = st.checkbox("I am a landless agricultural labourer / நிலமற்ற விவசாயத் தொழிலாளி")
+
+    st.subheader("4. Education / கல்வி")
+    govt_school = st.checkbox("I studied Classes 6-12 in a TN government / govt-aided school / அரசுப் பள்ளியில் படித்தேன்")
     in_college = st.checkbox("I am studying in college now / தற்போது கல்லூரியில் படிக்கிறேன்")
 
     submitted = st.form_submit_button("Check eligibility")
@@ -189,6 +241,10 @@ if submitted:
         "gets_pension": gets_pension,
         "govt_school": govt_school,
         "in_college": in_college,
+        "disability": disability,
+        "own_income": own_income,
+        "govt_job": govt_job,
+        "agri_labourer": agri_labourer,
     }
 
     eligible_list = []
