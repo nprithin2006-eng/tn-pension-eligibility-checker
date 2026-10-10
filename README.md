@@ -2,7 +2,7 @@
 
 A web app that checks which Tamil Nadu government schemes a person may be eligible for.
 
-Live app: 
+Live app: TN Scheme Eligibility Checker · Streamlit https://share.google/xmI8AxpqGFg5x0qZk
 
 ## Features
 - Bilingual form (English + Tamil)
