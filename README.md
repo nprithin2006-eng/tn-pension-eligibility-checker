@@ -2,7 +2,7 @@
 
 A web app that checks which Tamil Nadu government schemes a person may be eligible for.
 
-Live app: (unga streamlit link)
+Live app: 
 
 ## Features
 - Bilingual form (English + Tamil)
@@ -10,7 +10,7 @@ Live app: (unga streamlit link)
 - Shows WHY a person is not eligible for a scheme
 
 ## Tech
-Python, OOP-style modular functions, Streamlit
+Python, modular functions, Streamlit
 
 ## Note
 Preliminary check only. Rules last checked October 2026.
